@@ -18,8 +18,8 @@ public class Card {
     public boolean isFaceUp() {
         return faceUp;
     }
-    public boolean flip() {
-        return !isFaceUp();
+    public void flip() {
+        faceUp = !isFaceUp();
     }
     @Override
     public String toString() {

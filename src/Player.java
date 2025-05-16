@@ -4,7 +4,7 @@ import java.util.List;
 public class Player {
     private List<Card> hand;
     private int bet;
-    private int money;
+    private double money;
     private final boolean player;
 
     public Player(boolean player) {
@@ -17,8 +17,15 @@ public class Player {
         }
         bet = 0;
     }
+    public Player(Player player) {
+        this.hand = new ArrayList<>(player.hand);
+        this.bet = player.bet;
+        this.money = player.money;
+        this.player = player.player;
+    }
 
-    public int currentMoney() {
+
+    public double currentMoney() {
         return money;
     }
     public int currentBet() {
@@ -36,14 +43,14 @@ public class Player {
                 break;
         }
     }
-    public void setMoney(int money) {
+    public void setMoney(double money) {
         this.money = money;
     }
     public boolean isPlayer() {
         return player;
     }
     public List<Card> getHand() {
-        return hand;
+        return new ArrayList<>(hand);
     }
     public String showHand() {
         StringBuilder builder = new StringBuilder();
@@ -53,6 +60,12 @@ public class Player {
             } else {
                 builder.append("?");
             }
+            builder.append(", ");
+        }
+        if (!hand.isEmpty()) {
+            builder.delete(builder.length() - 2, builder.length());
+        } else {
+            builder.append("nothing");
         }
         return new String(builder);
     }
@@ -60,7 +73,7 @@ public class Player {
     public void addOneCard(Card card) {
         hand.add(card);
     }
-    public void addCards(ArrayList<Card> cards) {
+    public void addCards(List<Card> cards) {
         hand.addAll(cards);
     }
     public Card removeOneCard(Card card) {
@@ -77,9 +90,9 @@ public class Player {
     @Override
     public String toString() {
         if (player) {
-            return String.format("Player's current bet is %d, current money is %d, and current hand is %s\n", bet, money, showHand());
+            return String.format("Player's current bet is %d, current money is %.2f, and current hand is %s.", bet, money, showHand());
         } else {
-            return String.format("The house's current money is %d, and the dealer's current hand is %s\n", money, showHand());
+            return String.format("The house's current money is %.2f, and the dealer's current hand is %s.", money, showHand());
         }
     }
 }

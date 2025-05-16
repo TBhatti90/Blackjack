@@ -13,24 +13,28 @@ public class Deck {
             }
         }
     }
+    public Deck(Deck deck) {
+        this.deckOfCards = new ArrayList<>(deck.deckOfCards);
+    }
+
     public void shuffle() {
         Collections.shuffle(deckOfCards);
     }
     public int size() {
         return deckOfCards.size();
     }
+    public List<Card> getDeckOfCards() {
+        return new ArrayList<>(deckOfCards);
+    }
     public Card dealOneCard() {
         return deckOfCards.removeFirst();
     }
     public List<Card> dealCards(int num) {
         List<Card> cards = new ArrayList<>(num);
-        for (Card card : deckOfCards) {
+        do {
             cards.add(deckOfCards.removeFirst());
             --num;
-            if (num == 0) {
-                break;
-            }
-        }
+        } while (num > 0);
         return cards;
     }
     public void addOneCard(Card card) {
@@ -42,6 +46,6 @@ public class Deck {
 
     @Override
     public String toString() {
-        return String.format("This deck has a size of %d cards\n", size());
+        return String.format("This deck has a size of %d cards.", size());
     }
 }
