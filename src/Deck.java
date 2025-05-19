@@ -13,9 +13,6 @@ public class Deck {
             }
         }
     }
-    public Deck(Deck deck) {
-        this.deckOfCards = new ArrayList<>(deck.deckOfCards);
-    }
 
     public void shuffle() {
         Collections.shuffle(deckOfCards);

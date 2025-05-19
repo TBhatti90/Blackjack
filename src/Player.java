@@ -17,13 +17,6 @@ public class Player {
         }
         bet = 0;
     }
-    public Player(Player player) {
-        this.hand = new ArrayList<>(player.hand);
-        this.bet = player.bet;
-        this.money = player.money;
-        this.player = player.player;
-    }
-
 
     public double currentMoney() {
         return money;

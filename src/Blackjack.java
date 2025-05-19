@@ -1,6 +1,4 @@
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Blackjack {
 	private Player player;
@@ -50,6 +48,57 @@ public class Blackjack {
 			dealer.getHand().getLast().flip();
 		}
 	}
+
+	public String simpleHand(List<Card> hand) {
+		StringBuilder builder = new StringBuilder();
+		for (Card card : hand) {
+			if (card.isFaceUp()) {
+				switch (card.getRank()) {
+					case TEN:
+					case JACK:
+					case QUEEN:
+					case KING:
+						builder.append(10);
+						break;
+					case TWO:
+						builder.append(2);
+						break;
+					case THREE:
+						builder.append(3);
+						break;
+					case FOUR:
+						builder.append(4);
+						break;
+					case FIVE:
+						builder.append(5);
+						break;
+					case SIX:
+						builder.append(6);
+						break;
+					case SEVEN:
+						builder.append(7);
+						break;
+					case EIGHT:
+						builder.append(8);
+						break;
+					case NINE:
+						builder.append(9);
+						break;
+					case ACE:
+						builder.append('A');
+						break;
+					default:
+						break;
+				}
+			} else {
+				builder.append("?");
+			}
+			builder.append(" ");
+		}
+		builder.delete(builder.length() - 1, builder.length());
+		return new String(builder);
+	}
+
 	public List<Integer> possibleHandValues(List<Card> hand) {
 		List<Integer> vals = new ArrayList<>();
 		int sumOne = 0;
@@ -140,6 +189,7 @@ public class Blackjack {
 					return GameResult.NATURAL_BLACKJACK;
 				}
 			case BUST:
+				dealer.setMoney(dealer.currentMoney() + player.currentBet());
 				return GameResult.PLAYER_LOST;
 			case NORMAL:
 				if (assessHand(dealer.getHand()).equals(HandAssessment.BUST)) {
@@ -156,6 +206,7 @@ public class Blackjack {
 						}
 						return GameResult.PLAYER_WON;
 					} else if (val < dealerVal || valAce < dealerValAce) {
+						dealer.setMoney(dealer.currentMoney() + player.currentBet());
 						return GameResult.PLAYER_LOST;
 					} else {
 						return GameResult.PUSH;
@@ -177,97 +228,190 @@ public class Blackjack {
 			return val.equals(7);
 		}
 	}
+	public void discardHand() {
+		discard.addCards(player.getHand());
+		discard.addCards(dealer.getHand());
+		player.removeCards(player.getHand());
+		dealer.removeCards(dealer.getHand());
+	}
+	public boolean keepPlaying() {
+		Scanner query = new Scanner(System.in);
+		String str = "";
 
-	public static void main(String[] args) {
-		Blackjack game = new Blackjack();
-		boolean busted = false;
-		Scanner input = new Scanner(System.in);
-		boolean keepPlaying = true;
+		System.out.println("Would you like to keep playing? Please say yes or no.");
+		do {
+			try {
+				str = query.nextLine();
+				if (!str.equalsIgnoreCase("yes") && !str.equalsIgnoreCase("no")) {
+					System.err.println("Error, input must be yes or no.");
+				}
+			} catch (InputMismatchException e) {
+				System.err.println("Error, input must be a word.");
+			}
+		} while (!str.equalsIgnoreCase("yes") && !str.equalsIgnoreCase("no"));
+
+        return str.equalsIgnoreCase("yes");
+	}
+	public boolean getBet() {
+		Scanner inputBet = new Scanner(System.in);
 
 		do {
-			System.out.println("Hi, welcome to Blackjack! Please place your bet in $5, $10, $50, $100, or $500 increments:");
-			game.getPlayer().setBet(input.nextInt());
-			input.nextLine();
-			game.getPlayer().setMoney(game.getPlayer().currentMoney() - game.getPlayer().currentBet());
-			if (game.getPlayer().currentMoney() < 0) {
-				System.out.println("Player, you have no money to bet, you're disqualified.");
-				break;
-			}
-			System.out.println("Dealing initial cards to player and dealer, respectively.");
-			game.initialDeal();
-			System.out.println(game.getPlayer());
-			System.out.println(game.getDealer());
-
-			System.out.println("Checking for blackjack");
-			HandAssessment dealerAssess = game.assessHand(game.getDealer().getHand());
-			HandAssessment playerAssess = game.assessHand(game.getPlayer().getHand());
-			if (dealerAssess == HandAssessment.NATURAL_BLACKJACK) {
-				game.getDealer().getHand().getLast().flip();
-				if (playerAssess == HandAssessment.NATURAL_BLACKJACK) {
-					game.getPlayer().setMoney(game.getPlayer().currentMoney() + game.getPlayer().currentBet());
-					System.out.println(GameResult.PUSH);
-				} else {
-					System.out.println(GameResult.PLAYER_LOST);
+			try {
+				player.setBet(inputBet.nextInt());
+				switch (player.currentBet()) {
+					case 5:
+					case 10:
+					case 50:
+					case 100:
+					case 500:
+						break;
+					default:
+						System.err.println("Error, number must be one of the aforementioned values.");
+						break;
 				}
-				game.getDiscard().addCards(game.getPlayer().getHand());
-				game.getDiscard().addCards(game.getDealer().getHand());
-				game.getPlayer().removeCards(game.getPlayer().getHand());
-				game.getDealer().removeCards(game.getDealer().getHand());
-				continue;
+			} catch (InputMismatchException e) {
+				System.err.println("Error, must be a natural number.");
+			} finally {
+				inputBet.nextLine();
 			}
-			System.out.println("Player, it is your turn.");
-			System.out.println("Would you like to hit or stay?");
-			String hit = input.nextLine();
-			while (hit.equalsIgnoreCase("hit")) {
-				game.takeCard(game.getPlayer());
-				System.out.println(game.getPlayer());
-				System.out.println(game.getDealer());
-				if (game.assessHand(game.getPlayer().getHand()) == HandAssessment.BUST) {
-					System.out.println(GameResult.PLAYER_LOST);
-					busted = true;
+		} while (player.currentBet() != 500 && player.currentBet() != 100 && player.currentBet() != 50 && player.currentBet() != 10 && player.currentBet() != 5);
+		player.setMoney(player.currentMoney() - player.currentBet());
+
+		if (player.currentMoney() < 0) {
+			System.out.println("Player, you have no money to bet, you're disqualified.");
+			return false;
+		} else {
+			return true;
+		}
+	}
+	public boolean dealerBlackjackCheck() {
+		HandAssessment dealerAssess = assessHand(dealer.getHand());
+		HandAssessment playerAssess = assessHand(player.getHand());
+
+		if (dealerAssess == HandAssessment.NATURAL_BLACKJACK) {
+			dealer.getHand().getLast().flip();
+			if (playerAssess == HandAssessment.NATURAL_BLACKJACK) {
+				player.setMoney(player.currentMoney() + player.currentBet());
+				System.out.println(GameResult.PUSH);
+			} else {
+				System.out.println(GameResult.PLAYER_LOST);
+			}
+			return true;
+		}
+
+		return false;
+	}
+	public boolean playerTurn() {
+		Scanner inputHit = new Scanner(System.in);
+		String hit = inputHit.nextLine();
+		boolean busted = false;
+
+		while (hit.equalsIgnoreCase("hit")) {
+			takeCard(player);
+			showCards();
+			if (assessHand(player.getHand()) == HandAssessment.BUST) {
+				System.out.println(GameResult.PLAYER_LOST);
+				busted = true;
+				break;
+			} else {
+				if (possibleHandValues(player.getHand()).contains(21)) {
 					break;
 				}
-				System.out.println("Hit or Stay?");
-				hit = input.nextLine();
 			}
-			if (busted) {
-				continue;
+			System.out.println("Hit or Stay?");
+			hit = inputHit.nextLine();
+		}
+
+		return busted;
+	}
+	public void showCards() {
+		System.out.printf("Player: %s\n", simpleHand(player.getHand()));
+		System.out.printf("Dealer: %s\n", simpleHand(dealer.getHand()));
+	}
+
+	public static void main(String[] args) {
+		// Initialization of game
+		Blackjack game = new Blackjack();
+
+		do {
+			// Introduction and obtaining bet
+			System.out.println("Hi, welcome to Blackjack! Please place your bet in $5, $10, $50, $100, or $500 increments:");
+			if (!game.getBet()) {
+				break;
 			}
+			System.out.printf("Current balance: Player - %.2f, House - %.2f\n", game.getPlayer().currentMoney(), game.getDealer().currentMoney());
+
+			// Initial dealing of cards
+			System.out.println("Dealing initial cards to player and dealer, respectively.");
+			game.initialDeal();
+			// Initial showing of cards
+			game.showCards();
+
+			// Some rules stipulate that there is an automatic checking for blackjack, of the dealer's hand, after the
+			// initial dealing.
+			System.out.println("Checking for blackjack");
+			if (game.dealerBlackjackCheck()) {
+				game.discardHand();
+				if (game.keepPlaying()) {
+					continue;
+				} else {
+					break;
+				}
+			}
+			System.out.println("No blackjack found");
+
+			// Player's turn. Will continue hitting, until the player busts, or the player chooses to stay.
+			System.out.println("Player, it is your turn.");
+			System.out.println("Would you like to hit or stay?");
+			if (game.playerTurn()) {
+				game.discardHand();
+				if (game.keepPlaying()) {
+					continue;
+				} else {
+					break;
+				}
+			}
+
+			// Dealer's turn. Will continue hitting, until dealer reaches 17.
+			System.out.println("Dealer's turn");
 			game.getDealer().getHand().getLast().flip();
+			game.showCards();
 			while (game.dealerShouldTakeCard()) {
 				game.takeCard(game.getDealer());
-				System.out.println(game.getPlayer());
-				System.out.println(game.getDealer());
+				game.showCards();
 			}
+
+			// Evaluate the game at the end of the player's and dealer's turn.
 			switch (game.gameAssessment()) {
 				case NATURAL_BLACKJACK:
 					game.getPlayer().setMoney(game.getPlayer().currentMoney() + (1.5 * (2 + game.getPlayer().currentBet())));
+					System.out.println(GameResult.NATURAL_BLACKJACK);
 					break;
 				case PLAYER_WON:
 					game.getPlayer().setMoney(game.getPlayer().currentMoney() + (2 * game.getPlayer().currentBet()));
+					System.out.println(GameResult.PLAYER_WON);
 					break;
 				case PUSH:
 					game.getPlayer().setMoney(game.getPlayer().currentMoney() + game.getPlayer().currentBet());
+					System.out.println(GameResult.PUSH);
 					break;
 				case PLAYER_LOST:
+					System.out.println(GameResult.PLAYER_LOST);
 					break;
 				case HOUSE_BUST:
+					System.out.println(GameResult.HOUSE_BUST);
 					break;
 				default:
+					System.err.println("Error, this should never be reached. Please restart the game.");
 					break;
 			}
-			game.getDiscard().addCards(game.getPlayer().getHand());
-			game.getDiscard().addCards(game.getDealer().getHand());
-			game.getPlayer().removeCards(game.getPlayer().getHand());
-			game.getDealer().removeCards(game.getDealer().getHand());
-
-			System.out.println("Would you like to keep playing?");
-			String response = input.nextLine();
-			if (response.equalsIgnoreCase("no")) {
-				keepPlaying = false;
+			game.discardHand();
+			if (!game.keepPlaying()) {
+				break;
 			}
-		} while(keepPlaying);
+		// Infinite loop, as a game runs until the user terminates or a fault is reached.
+		} while(true);
+
 		System.out.println("Thank you for playing Blackjack!");
-		input.close();
 	}
 }
